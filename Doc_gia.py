@@ -53,7 +53,7 @@ class QuanLyDocGia:
         for doc_gia in ds_doc_gia:
             doc_gia.hien_thi_thong_tin()
 
-    def cap_nhat_doc_gia(self, doc_gia, ten=None, email=None, ma=None):
+    def cap_nhat_doc_gia(self,ds_doc_gia, doc_gia, ten=None, email=None, ma=None):
         if ten:
             doc_gia.ten = ten 
         if email:
@@ -154,9 +154,9 @@ class QuanLyDocGia:
                     doc_gia = self.tim_kiem_doc_gia(ds_doc_gia, ma=ma)
                     if doc_gia:
                         doc_gia = doc_gia[0]
-                        ten = input("Nhập tên mới (để trống nếu không muốn thay đổi): ")
-                        email = input("Nhập email mới (để trống nếu không muốn thay đổi): ")
-                        self.cap_nhat_doc_gia(doc_gia, ten=ten, email=email)
+                        ten = input("Nhập tên mới (để trống nếu không muốn thay đổi): ").strip()
+                        email = input("Nhập email mới (để trống nếu không muốn thay đổi): ").strip()
+                        self.cap_nhat_doc_gia(ds_doc_gia=ds_doc_gia,doc_gia=doc_gia, ten=ten if ten else None, email=email if email else None)
                     else:
                         print("Không tìm thấy độc giả.")
                 elif lua_chon == 5:
