@@ -3,21 +3,12 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import re
 
-# class Book_loan_requests:
-#     def __init__(self, request_ID, customer_ID, loan_start_date, loan_end_date, return_date, book_ID, quantity):
-#         self.request_ID = request_ID
-#         self.customer_ID = customer_ID
-#         self.loan_start_date = loan_start_date
-#         self.loan_end_date = loan_end_date
-#         self.return_date = return_date
-#         self.book_ID = book_ID
-#         self.quantity = quantity
 
 class Request_manager:
     file_path = 'book_loan_requests.xlsx'
     @classmethod
     def check_ID(cls, id):
-        reid = r'[a-zA-Z]{3}\d{4}'
+        reid = r'[a-zA-Z]{3}\d{4}\b'
         if re.match(reid,id): return True
         else: return False
 
@@ -37,7 +28,7 @@ class Request_manager:
         new_request_data = cls.get_infor()
         df = cls.load_request()
         df = pd.concat([df,pd.DataFrame([new_request_data])], ignore_index=True)
-        cls.confirm_change(df)
+        cls.confirm_change(cls, df)
 
     @classmethod
     def update_requests(cls):
@@ -46,25 +37,29 @@ class Request_manager:
         df = cls.load_request()
         while True:
             while True:
-                request_id_ud = input('Nhập mã sách muốn cập nhật vd ABC1234: ').upper()
+                request_id_ud = input('Nhập mã sách muốn cập nhật vd ABC1234 (exit để trở lại): ').upper()
+                if request_id_ud == 'EXIT': cls.choose_action() 
                 if cls.check_ID(request_id_ud): break
-                else: print('Mã nhập theo mẫu vd: ABC1234.')
+                else: print('Sai định dạng mã. Mã nhập theo mẫu vd: ABC1234.')
             if request_id_ud in list(df['Request_ID']):
                 break
             else:
                 print('Mã mượn sách không tồn tại.')
         print(f'Nhập thông tin cho mã mượn {request_id_ud}')
         while True:
-            customer_id_ud = input('Nhâp mã khách hàng vd: ABC1234: ').upper()
+            customer_id_ud = input('Nhâp mã khách hàng vd: ABC1234 (exit để trở lại): ').upper()
+            if customer_id_ud == 'EXIT': cls.choose_action() 
             if cls.check_ID(customer_id_ud): break
-            else: print('Mã nhập theo mẫu vd: ABC1234.')
+            else: print('Sai định dạng mã. Mã nhập theo mẫu vd: ABC1234.')
         while True:
-            book_id_ud = input('Nhập mã mượn sách vd: ABC1234: ').upper()
+            book_id_ud = input('Nhập mã sách vd: ABC1234 (exit để trở lại): ').upper()
+            if book_id_ud == 'EXIT': cls.choose_action() 
             if cls.check_ID(book_id_ud): break
-            else: print('Mã nhập theo mẫu vd: ABC1234. ')        
+            else: print('Sai định dạng mã. Mã nhập theo mẫu vd: ABC1234. ')        
         while True:
             while True:
-                loan_start_date_ud = input('Nhập ngày mượn sách định dang (mm/dd/yyyy): ')
+                loan_start_date_ud = input('Nhập ngày mượn sách định dang (mm/dd/yyyy) (exit để trở lại): ')
+                if loan_start_date_ud == 'EXIT': cls.choose_action() 
                 try:
                     datetime.strptime(loan_start_date_ud, date_format)
                     break
@@ -72,28 +67,29 @@ class Request_manager:
                     print('Nhập sai định dạng nhập lại')
 
             while True:  
-                loan_end_date_ud = input('Nhập ngày hẹn trả sách định dang (mm/dd/yyyy): ')
+                loan_end_date_ud = input('Nhập ngày hẹn trả sách định dang (mm/dd/yyyy) (exit để trở lại): ')
+                if loan_end_date_ud == 'EXIT': cls.choose_action() 
                 try:
                     datetime.strptime(loan_end_date_ud, date_format)
                     break
                 except ValueError:
                     print('Sai định dạng mời nhập lại.')
-            if loan_end_date_ud >= loan_start_date_ud: break
+            if datetime.strptime(loan_end_date_ud, date_format) >= datetime.strptime(loan_start_date_ud, date_format): 
+                break
             else: print('Ngày trả phải sau ngày mượn, nhập lại.')
 
         while True:
-            quantity_ud = input('Nhập số lượng sách mượn: ')
+            quantity_ud = input('Nhập số lượng sách mượn (exit để trở lại): ')
+            if quantity_ud == 'EXIT': cls.choose_action() 
             try:
                 quantity_ud = int(quantity_ud)
-                if quantity_ud < 0:
-                    print('Số lượng phải lớn hơn 0.')
-                else:
-                    break
+                if quantity_ud < 0: print('Số lượng phải lớn hơn 0.')
+                else: break
             except ValueError:
                 print('Số lượng phải là số nguyên: ')
 
-        df.loc[df['Request_ID'] == request_id_ud, ['Customer_ID', 'Loan_start_date', 'Loan_end_date', 'Book_ID', 'Quantity']] = customer_id_ud, loan_start_date_ud, loan_end_date_ud, book_id_ud, quantity_ud
-        cls.confirm_change(df)
+        df.loc[df['Request_ID'] == request_id_ud, ['Customer_ID', 'Loan_start_date', 'Loan_end_date', 'Book_ID', 'Quantity']] = [customer_id_ud, loan_start_date_ud, loan_end_date_ud, book_id_ud, quantity_ud]
+        cls.confirm_change(cls, df)
 
     @classmethod
     def show_requests(cls):
@@ -115,7 +111,8 @@ class Request_manager:
     def search_requests2(cls): 
         df = cls.load_request()
         while True:
-            info_search = input('Tìm kiếm đơn mượn sách bằng mã vd: (ABC   7): ').upper()
+            info_search = input('Tìm kiếm bằng mã 7 kí tự vd: (ABC   7) (exit để trở lại): ').upper()
+            if info_search == 'EXIT': cls.choose_action() 
             if len(info_search) == 7: break 
             else: print('Mã phải gồm 7 kí tự vd: (ABC   7).')
         a,b,c,d,e,g,h = map(str, info_search)
@@ -138,12 +135,12 @@ class Request_manager:
     @classmethod
     def del_requests(cls):
         print('Xoá phiếu mượn sách')
-        while True:    
-            ID_del_request = input('Nhập mã mượn sách vd: ABC1234: ').upper()
-            if cls.check_ID(ID_del_request): break
-            else: print('Mã nhập theo mẫu vd: ABC1234.')
         df = cls.load_request()
-        while True:
+        while True:    
+            ID_del_request = input('Nhập mã mượn sách vd: ABC1234 (exit để trở lại): ').upper()
+            if ID_del_request == 'EXIT': cls.choose_action()
+            if cls.check_ID(ID_del_request): break
+            else: print('Sai định dạng mã. Mã nhập theo mẫu vd: ABC1234.')
             if ID_del_request in df['Request_ID'].values:
                 df = df[df['Request_ID'] != ID_del_request]
                 cls.confirm_change(df)
@@ -176,14 +173,21 @@ class Request_manager:
     def update_returned(cls):                          # cập nhật phiếu đã trả
         print('Trả sách')
         date = datetime.today().strftime("%m/%d/%Y")
+        date = str(date)
         df = cls.load_request()
         while True:
-            lr_ID = input('Nhập mã phiếu trả vd: ABC1234: ').upper()
-            if cls.check_ID(lr_ID): break
-            else: print('Mã nhập theo mẫu vd: ABC1234.')
+            lr_ID = input('Nhập mã phiếu trả vd: ABC1234 (exit để trở lại): ').upper()
+            if lr_ID == 'EXIT': cls.choose_action()
+            if cls.check_ID(lr_ID): 
+                if lr_ID in list(df['Request_ID']):
+                    if pd.isna(df.loc[df['Request_ID'] == lr_ID, 'Return_date'].values[0]):
+                        break
+                    else: print('Phiếu mượn đã trả.')
+                else: print('Mã mượn không tồn tại.')
+            else: print('Sai định dạng mã. Mã nhập theo mẫu vd: ABC1234.')
         df.loc[df['Request_ID'] == lr_ID, 'Return_date'] =  date
-        cls.confirm_change(df)
-        
+        cls.confirm_change(cls, df)
+    # df.loc[df['Request_ID'] == request_id_ud, ['Customer_ID', 'Loan_start_date', 'Loan_end_date', 'Book_ID', 'Quantity']]
     @classmethod                  #"%m/%d/%Y"                
     def statistic(cls):
         print('Chức năng thống kê.')                  
@@ -239,27 +243,30 @@ class Request_manager:
     def get_infor(cls): #ok
         date_format = "%m/%d/%Y"
         print('Nhập thông tin:')
+        df = cls.load_request()
         while True:
-            df = cls.load_request()
-            while True:
-                request_ID = input('Nhập mã mượn sách vd: ABC1234: ').upper()
-                if cls.check_ID(request_ID): break
-                else: print('Mã nhập theo mẫu vd: ABC1234.')
+            request_ID = input('Nhập mã mượn sách vd: ABC1234 (exit để trở lại): ').upper()
+            if request_ID == 'EXIT': cls.choose_action()     
+            if cls.check_ID(request_ID): break
+            else: print('Sai định dạng mã. Mã nhập theo mẫu vd: ABC1234.')
             if request_ID in df['Request_ID'].to_list(): print('Mã đơn sách đã tồn tại.')
             else: break
 
         while True:
-            customer_ID = input('Nhập mã khách hàng vd: ABC1234: ').upper()
+            customer_ID = input('Nhập mã khách hàng vd: ABC1234 (exit để trở lại): ').upper()
+            if customer_ID == 'EXIT': cls.choose_action() 
             if cls.check_ID(customer_ID): break
-            else: print('Mã nhập theo mẫu vd: ABC1234.')   
+            else: print('Sai định dạng mã. Mã nhập theo mẫu vd: ABC1234.')   
         while True:
-            book_ID = input('Nhập mã sách vd ABC1234: ').upper()
+            book_ID = input('Nhập mã sách vd ABC1234 (exit để trở lại): ').upper()
+            if book_ID == 'EXIT': cls.choose_action() 
             if cls.check_ID(book_ID): break
-            else: print('Mã nhập theo mẫu vd: ABC1234.')
+            else: print('Sai định dạng mã. Mã nhập theo mẫu vd: ABC1234.')
 
         while True:
             while True:
-                loan_start_date = input('Nhập ngày mượn sách định dang (mm/dd/yyyy): ')
+                loan_start_date = input('Nhập ngày mượn sách định dang (mm/dd/yyyy) (exit để trở lại): ')
+                if loan_start_date == 'EXIT': cls.choose_action() 
                 try:
                     datetime.strptime(loan_start_date, date_format)
                     break
@@ -267,18 +274,20 @@ class Request_manager:
                     print('Nhập sai định dạng nhập lại')
 
             while True:  
-                loan_end_date = input('Nhập ngày hẹn trả sách định dang (mm/dd/yyyy): ')
+                loan_end_date = input('Nhập ngày hẹn trả sách định dang (mm/dd/yyyy) (exit để trở lại): ')
+                if loan_end_date == 'EXIT': cls.choose_action() 
                 try:
                     datetime.strptime(loan_end_date, date_format)
                     break
                 except ValueError:
                     print('Sai định dạng mời nhập lại.')
-            if loan_end_date >= loan_start_date: break
+            if datetime.strptime(loan_end_date, date_format) >= datetime.strptime(loan_start_date, date_format): break
             else: print('Ngày trả phải sau ngày mượn, nhập lại.')
 
         return_date = ''
         while True:
-            quantity = input('Nhập số lượng sách mượn: ')
+            quantity = input('Nhập số lượng sách mượn (exit để trở lại): ')
+            if quantity == 'EXIT': cls.choose_action() 
             try:
                 quantity = int(quantity)
                 if quantity < 0:
